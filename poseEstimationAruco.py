@@ -59,6 +59,29 @@ def aruco_display(corners, ids, rejected, image):
 			
 	return image
 
+def displayCoordinates(frame, markerCorner, tvec, rvec):
+    
+    x_translate, y_translate, z_translate = tvec[0][0][0], tvec[0][0][1], tvec[0][0][2]
+    x_rot, y_rot, z_rot = rvec[0][0][0], rvec[0][0][1], rvec[0][0][2]
+    
+    corners = markerCorner.reshape((4, 2))
+    (topLeft, topRight, bottomRight, bottomLeft) = corners
+    
+    topRight = (int(topRight[0]), int(topRight[1]))
+    bottomRight = (int(bottomRight[0]), int(bottomRight[1]))
+    bottomLeft = (int(bottomLeft[0]), int(bottomLeft[1]))
+    topLeft = (int(topLeft[0]), int(topLeft[1]))
+    
+    cv2.putText(frame, "z: " + str(z_translate), (bottomLeft[0], bottomLeft[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+    cv2.putText(frame, "y: " + str(y_translate), (bottomLeft[0], bottomLeft[1] - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+    cv2.putText(frame, "x: " + str(x_translate), (bottomLeft[0], bottomLeft[1] - 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+    cv2.putText(frame, "Position",(bottomLeft[0], bottomLeft[1] - 70), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
+    cv2.putText(frame, "z: " + str(z_rot), (bottomRight[0], bottomRight[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+    cv2.putText(frame, "y: " + str(y_rot), (bottomRight[0], bottomRight[1] - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+    cv2.putText(frame, "x: " + str(x_rot), (bottomRight[0], bottomRight[1] - 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+    cv2.putText(frame, "Orientation",(bottomRight[0], bottomRight[1] - 70), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
 
 
 def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coefficients):
@@ -69,17 +92,25 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
 
 
     corners, ids, rejected_img_points = cv2.aruco.detectMarkers(gray, cv2.aruco_dict,parameters=parameters)
-
+    aruco_display(corners, ids, rejected_img_points, frame)
+    markerSize = 7 # enter ground truth of marker size in cm
+    AxesScalingFactor = 0.002
         
     if len(corners) > 0:
         for i in range(0, len(ids)):
            
-            rvec, tvec, markerPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], 0.02, matrix_coefficients,
+            rvec, tvec, markerPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], markerSize, matrix_coefficients,
                                                                        distortion_coefficients)
             
-            cv2.aruco.drawDetectedMarkers(frame, corners) 
+            scale = markerSize/AxesScalingFactor
+            print("Rotation vector: ", rvec)
+            print("Translation vector: ", tvec)
 
-            cv2.drawFrameAxes(frame, matrix_coefficients, distortion_coefficients, rvec, tvec, 0.01)  
+            cv2.aruco.drawDetectedMarkers(frame, corners) 
+            displayCoordinates(frame, corners[i], tvec, rvec) 
+            scaledTvec = tvec 
+            scaledTvec[0] = scaledTvec*AxesScalingFactor
+            cv2.drawFrameAxes(frame, matrix_coefficients, distortion_coefficients, rvec, scaledTvec, 0.01) 
 
     return frame
 
