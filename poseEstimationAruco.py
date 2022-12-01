@@ -55,7 +55,7 @@ def aruco_display(corners, ids, rejected, image):
 			
 			cv2.putText(image, str(markerID),(topLeft[0], topLeft[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
 				0.5, (0, 255, 0), 2)
-			print("[Inference] ArUco marker ID: {}".format(markerID))
+			# print("[Inference] ArUco marker ID: {}".format(markerID))
 			
 	return image
 
@@ -93,24 +93,57 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
 
     corners, ids, rejected_img_points = cv2.aruco.detectMarkers(gray, cv2.aruco_dict,parameters=parameters)
     aruco_display(corners, ids, rejected_img_points, frame)
-    markerSize = 7 # enter ground truth of marker size in cm
+    markerSize = 2.7 # enter ground truth of marker size in cm
     AxesScalingFactor = 0.002
+    # print(ids)
+
+    if ids is not None:
+        id_list = ids.reshape((1, len(ids))).tolist()[0]
+        # print(ids)
+        # print(id_list)
+        id_x = dict.fromkeys(id_list)
+        id_y = dict.fromkeys(id_list)
+        id_z = dict.fromkeys(id_list)
+        t_vecs = dict.fromkeys(id_list)
         
     if len(corners) > 0:
         for i in range(0, len(ids)):
            
-            rvec, tvec, markerPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], markerSize, matrix_coefficients,
+            rvec, tvec, markerPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], markerSize, matrix_coefficients,     # getting coordinates for all ids
                                                                        distortion_coefficients)
             
             scale = markerSize/AxesScalingFactor
-            print("Rotation vector: ", rvec)
-            print("Translation vector: ", tvec)
-
+            # print("Rotation vector: ", rvec)
+            # print("Translation vector: ", tvec)
+            x_translate, y_translate, z_translate = tvec[0][0][0], tvec[0][0][1], tvec[0][0][2]
+            id_x[ids[i,0]] = x_translate
+            id_y[ids[i,0]] = y_translate
+            id_z[ids[i,0]] = z_translate
+            
+  
             cv2.aruco.drawDetectedMarkers(frame, corners) 
             displayCoordinates(frame, corners[i], tvec, rvec) 
             scaledTvec = tvec 
             scaledTvec[0] = scaledTvec*AxesScalingFactor
             cv2.drawFrameAxes(frame, matrix_coefficients, distortion_coefficients, rvec, scaledTvec, 0.01) 
+    
+    if ids is not None:
+        # print(id_x)
+        # print(id_x.keys().type)
+        if 2 in id_x and 1 in id_x:
+            print(f"vertical distance: {abs(id_y[2] - id_y[1])}")
+            print(f"horizontal distance: {abs(id_x[2] - id_x[1])}")
+
+            cv2.putText(frame, "vertical distance: "+ str(abs(id_y[2] - id_y[1])),(20,20), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5, (0, 255, 0), 2)
+            cv2.putText(frame, "horizontal distance: "+ str(abs(id_x[2] - id_x[1])),(20,60), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5, (0, 255, 0), 2)
+
+
+            cv2.putText(frame, "distance: "+ str(np.sqrt((id_y[2] - id_y[1])**2 + (id_x[2] - id_x[1])**2)),(20,100), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5, (0, 255, 0), 2)
+            cv2.putText(frame, "distance2: "+ str(abs(np.linalg.norm(t_vecs[2]-t_vecs[1]))),(20,140), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5, (0, 255, 0), 2)
 
     return frame
 
