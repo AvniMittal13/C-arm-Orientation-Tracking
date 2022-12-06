@@ -40,19 +40,25 @@ def getRotAngleFromCenter(C, A, B):
             (A) static -> pint on C-arm which is not moving
             (B) moving -> point on C-arm movies with C-arm
         Output:
-            theta -> angle opposite to center C-arm
+            thetaC -> angle opposite to center C-arm
 
         Calculating using cosine formula
     """
-    a = np.linalg.norm(C - B)
-    b = np.linalg.norm(C - A)
-    c = np.linalg.norm(B - A)
+    A = np.array(A[0][0])
+    B = np.array(B[0][0])
+    C = np.array(C[0])
 
-    # applying cosine law
-    cosC = (a**2 + b**2 - c**2)/(2*b*c)
+    # print(A, B, C)
 
-    # getting cos inverse and converting to degrees
-    thetaC = math.degrees(math.acos(cosC))
+    ac = A - C
+    bc = B - C
 
-    return thetaC 
+    # print(ac, bc)
 
+    cosine_angle = np.dot(ac, bc) / (np.linalg.norm(ac) * np.linalg.norm(bc))
+    thetaC = np.degrees(np.arccos(cosine_angle))
+    print(cosine_angle)
+    print(thetaC)
+    return thetaC
+
+    

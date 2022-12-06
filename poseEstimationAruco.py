@@ -5,9 +5,9 @@ import time
 from utils import * 
 
 # setting up ids of aruco tags
-ID_center = 0
-ID_static = 1
-ID_moving = 2
+ID_center = 0   # won't really have an id for this, so need 4 ids in total
+ID_static = 2
+ID_moving = 1
 ID_up = 3
 ID_down = 4
 
@@ -142,8 +142,8 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
         # print(id_x)
         # print(id_x.keys().type)
         if 2 in id_x and 0 in id_x:
-            print(f"vertical distance: {abs(id_y[2] - id_y[0])}")
-            print(f"horizontal distance: {abs(id_x[2] - id_x[0])}")
+            # print(f"vertical distance: {abs(id_y[2] - id_y[0])}")
+            # print(f"horizontal distance: {abs(id_x[2] - id_x[0])}")
 
             cv2.putText(frame, "vertical distance: "+ str(abs(id_y[2] - id_y[0])),(20,20), cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (0, 255, 0), 2)
@@ -156,6 +156,19 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
             cv2.putText(frame, "distance2: "+ str(abs(np.linalg.norm(t_vecs[2]-t_vecs[0]))),(20,140), cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (0, 255, 0), 2)
 
+
+    # if ids is not None:
+
+    #     if ID_center in id_x and ID_moving in id_x and ID_static in id_x :
+
+    #         # getting rotation angle
+    #         circumCenterCoord = getCircumcenter(t_vecs[ID_static], t_vecs[ID_center], t_vecs[ID_moving])
+    #         thetaC = getRotAngleFromCenter(circumCenterCoord, t_vecs[ID_static], t_vecs[ID_moving])
+
+    #         cv2.putText(frame, "Center pt: "+ str(circumCenterCoord),(20,160), cv2.FONT_HERSHEY_SIMPLEX,
+    #             0.5, (0, 255, 0), 2)
+    #         cv2.putText(frame, "Rot angle: "+ str(thetaC),(20,180), cv2.FONT_HERSHEY_SIMPLEX,
+    #             0.5, (0, 255, 0), 2)
 
     if ids is not None:
 
