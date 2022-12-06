@@ -2,7 +2,14 @@ import numpy as np
 import cv2
 import sys
 import time
+from utils import * 
 
+# setting up ids of aruco tags
+ID_center = 0
+ID_static = 1
+ID_moving = 2
+ID_up = 3
+ID_down = 4
 
 ARUCO_DICT = {
 	"DICT_4X4_50": cv2.aruco.DICT_4X4_50,
@@ -111,6 +118,8 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
            
             rvec, tvec, markerPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], markerSize, matrix_coefficients,     # getting coordinates for all ids
                                                                        distortion_coefficients)
+
+            # rvec, tvec, markerPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], markerSize)
             
             scale = markerSize/AxesScalingFactor
             # print("Rotation vector: ", rvec)
@@ -120,30 +129,44 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
             id_y[ids[i,0]] = y_translate
             id_z[ids[i,0]] = z_translate
             
-  
+            t_vecs[ids[i,0]] = tvec
+
             cv2.aruco.drawDetectedMarkers(frame, corners) 
             displayCoordinates(frame, corners[i], tvec, rvec) 
             scaledTvec = tvec 
             scaledTvec[0] = scaledTvec*AxesScalingFactor
             cv2.drawFrameAxes(frame, matrix_coefficients, distortion_coefficients, rvec, scaledTvec, 0.01) 
+            # cv2.drawFrameAxes(frame, rvec, scaledTvec, 0.01) 
     
     if ids is not None:
         # print(id_x)
         # print(id_x.keys().type)
-        if 2 in id_x and 1 in id_x:
-            print(f"vertical distance: {abs(id_y[2] - id_y[1])}")
-            print(f"horizontal distance: {abs(id_x[2] - id_x[1])}")
+        if 2 in id_x and 0 in id_x:
+            print(f"vertical distance: {abs(id_y[2] - id_y[0])}")
+            print(f"horizontal distance: {abs(id_x[2] - id_x[0])}")
 
-            cv2.putText(frame, "vertical distance: "+ str(abs(id_y[2] - id_y[1])),(20,20), cv2.FONT_HERSHEY_SIMPLEX,
+            cv2.putText(frame, "vertical distance: "+ str(abs(id_y[2] - id_y[0])),(20,20), cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (0, 255, 0), 2)
-            cv2.putText(frame, "horizontal distance: "+ str(abs(id_x[2] - id_x[1])),(20,60), cv2.FONT_HERSHEY_SIMPLEX,
+            cv2.putText(frame, "horizontal distance: "+ str(abs(id_x[2] - id_x[0])),(20,60), cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (0, 255, 0), 2)
 
 
-            cv2.putText(frame, "distance: "+ str(np.sqrt((id_y[2] - id_y[1])**2 + (id_x[2] - id_x[1])**2)),(20,100), cv2.FONT_HERSHEY_SIMPLEX,
+            cv2.putText(frame, "distance: "+ str(np.sqrt((id_y[2] - id_y[0])**2 + (id_x[2] - id_x[0])**2)),(20,100), cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (0, 255, 0), 2)
-            cv2.putText(frame, "distance2: "+ str(abs(np.linalg.norm(t_vecs[2]-t_vecs[1]))),(20,140), cv2.FONT_HERSHEY_SIMPLEX,
+            cv2.putText(frame, "distance2: "+ str(abs(np.linalg.norm(t_vecs[2]-t_vecs[0]))),(20,140), cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (0, 255, 0), 2)
+
+
+    if ids is not None:
+
+        if ID_center in id_x and ID_moving in id_x and ID_static in id_x and ID_up in id_x and ID_down in id_x:
+
+            # getting rotation angle
+            circumCenterCoord = getCircumcenter(t_vecs[ID_up], t_vecs[ID_down], t_vecs[ID_moving])
+            thetaC = getRotAngleFromCenter(circumCenterCoord, t_vecs[ID_static], t_vecs[ID_moving])
+
+            cv2.putText(frame, "Rot angle: "+ str(thetaC),(20,160), cv2.FONT_HERSHEY_SIMPLEX,
+                0.5, (0, 255, 0), 2)
 
     return frame
 
