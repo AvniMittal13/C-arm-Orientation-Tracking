@@ -184,10 +184,10 @@ while cap.isOpened():
     cv2.imshow('Estimated Pose', output)
 
     key = cv2.waitKey(1) & 0xFF
-    if keyboard.is_pressed('q'):
+    if len(dataset)>400 or keyboard.is_pressed('q'):
 
         dataset["actualAngle"] = actualAngle
-        dataset.to_csv("angle_"+str(actualAngle)+".csv", index = False)
+        dataset.to_csv("dataArucoTags/angle_"+str(actualAngle)+".csv", index = False)
         break
 
 cap.release()
