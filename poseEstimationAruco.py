@@ -6,8 +6,8 @@ from utils import *
 
 # setting up ids of aruco tags
 ID_center = 0   # won't really have an id for this, so need 4 ids in total
-ID_static = 2
-ID_moving = 1
+ID_static = 1
+ID_moving = 2
 ID_up = 3
 ID_down = 4
 
@@ -100,7 +100,7 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
 
     corners, ids, rejected_img_points = cv2.aruco.detectMarkers(gray, cv2.aruco_dict,parameters=parameters)
     aruco_display(corners, ids, rejected_img_points, frame)
-    markerSize = 2.7 # enter ground truth of marker size in cm
+    markerSize = 7 # enter ground truth of marker size in cm
     AxesScalingFactor = 0.002
     # print(ids)
 
@@ -132,29 +132,29 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
             t_vecs[ids[i,0]] = tvec
 
             cv2.aruco.drawDetectedMarkers(frame, corners) 
-            displayCoordinates(frame, corners[i], tvec, rvec) 
+            # displayCoordinates(frame, corners[i], tvec, rvec)     # calling function to display positoin and orientation coordinates
             scaledTvec = tvec 
             scaledTvec[0] = scaledTvec*AxesScalingFactor
             cv2.drawFrameAxes(frame, matrix_coefficients, distortion_coefficients, rvec, scaledTvec, 0.01) 
             # cv2.drawFrameAxes(frame, rvec, scaledTvec, 0.01) 
     
-    if ids is not None:
-        # print(id_x)
-        # print(id_x.keys().type)
-        if 2 in id_x and 0 in id_x:
-            # print(f"vertical distance: {abs(id_y[2] - id_y[0])}")
-            # print(f"horizontal distance: {abs(id_x[2] - id_x[0])}")
+    # if ids is not None:
+    #     # print(id_x)
+    #     # print(id_x.keys().type)
+    #     if 2 in id_x and 0 in id_x:
+    #         # print(f"vertical distance: {abs(id_y[2] - id_y[0])}")
+    #         # print(f"horizontal distance: {abs(id_x[2] - id_x[0])}")
 
-            cv2.putText(frame, "vertical distance: "+ str(abs(id_y[2] - id_y[0])),(20,20), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5, (0, 255, 0), 2)
-            cv2.putText(frame, "horizontal distance: "+ str(abs(id_x[2] - id_x[0])),(20,60), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5, (0, 255, 0), 2)
+    #         cv2.putText(frame, "vertical distance: "+ str(abs(id_y[2] - id_y[0])),(20,20), cv2.FONT_HERSHEY_SIMPLEX,
+    #                 0.5, (0, 255, 0), 2)
+    #         cv2.putText(frame, "horizontal distance: "+ str(abs(id_x[2] - id_x[0])),(20,60), cv2.FONT_HERSHEY_SIMPLEX,
+    #                 0.5, (0, 255, 0), 2)
 
 
-            cv2.putText(frame, "distance: "+ str(np.sqrt((id_y[2] - id_y[0])**2 + (id_x[2] - id_x[0])**2)),(20,100), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5, (0, 255, 0), 2)
-            cv2.putText(frame, "distance2: "+ str(abs(np.linalg.norm(t_vecs[2]-t_vecs[0]))),(20,140), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5, (0, 255, 0), 2)
+    #         cv2.putText(frame, "distance: "+ str(np.sqrt((id_y[2] - id_y[0])**2 + (id_x[2] - id_x[0])**2)),(20,100), cv2.FONT_HERSHEY_SIMPLEX,
+    #                 0.5, (0, 255, 0), 2)
+    #         cv2.putText(frame, "distance2: "+ str(abs(np.linalg.norm(t_vecs[2]-t_vecs[0]))),(20,140), cv2.FONT_HERSHEY_SIMPLEX,
+    #                 0.5, (0, 255, 0), 2)
 
 
     # if ids is not None:
@@ -172,14 +172,16 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
 
     if ids is not None:
 
-        if ID_center in id_x and ID_moving in id_x and ID_static in id_x and ID_up in id_x and ID_down in id_x:
+        if ID_moving in id_x and ID_static in id_x and ID_up in id_x and ID_down in id_x:
 
             # getting rotation angle
-            circumCenterCoord = getCircumcenter(t_vecs[ID_up], t_vecs[ID_down], t_vecs[ID_moving])
-            thetaC = getRotAngleFromCenter(circumCenterCoord, t_vecs[ID_static], t_vecs[ID_moving])
+            circumCenterCoord = getCircumcenter2(t_vecs[ID_up], t_vecs[ID_down], t_vecs[ID_moving])
+            thetaC = getRotAngleFromPt(circumCenterCoord, t_vecs[ID_static], t_vecs[ID_moving])
 
             cv2.putText(frame, "Rot angle: "+ str(thetaC),(20,160), cv2.FONT_HERSHEY_SIMPLEX,
                 0.5, (0, 255, 0), 2)
+            # cv2.putText(frame, "Rot angle u-d-static: "+ str(getRotAngleFromPt(t_vecs[ID_moving], t_vecs[ID_up], t_vecs[ID_down])),(20,180), cv2.FONT_HERSHEY_SIMPLEX,
+            #     0.5, (0, 255, 0), 2)
 
     return frame
 
@@ -218,4 +220,4 @@ while cap.isOpened():
 
 cap.release()
 cv2.destroyAllWindows()
-Footer
+
