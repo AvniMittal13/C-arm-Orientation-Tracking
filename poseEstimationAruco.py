@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import sys
 import time
+import keyboard
 from utils import * 
 
 # setting up ids of aruco tags
@@ -10,6 +11,9 @@ ID_static = 1
 ID_moving = 2
 ID_up = 3
 ID_down = 4
+
+ID_h_up = 5
+ID_h_down = 6
 
 ARUCO_DICT = {
 	"DICT_4X4_50": cv2.aruco.DICT_4X4_50,
@@ -178,10 +182,22 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
             circumCenterCoord = getCircumcenter2(t_vecs[ID_up], t_vecs[ID_down], t_vecs[ID_moving])
             thetaC = getRotAngleFromPt(circumCenterCoord, t_vecs[ID_static], t_vecs[ID_moving])
 
-            cv2.putText(frame, "Rot angle: "+ str(thetaC),(20,160), cv2.FONT_HERSHEY_SIMPLEX,
+            cv2.putText(frame, "Rot angle: "+ str(-15+thetaC),(20,20), cv2.FONT_HERSHEY_SIMPLEX,
                 0.5, (0, 255, 0), 2)
             # cv2.putText(frame, "Rot angle u-d-static: "+ str(getRotAngleFromPt(t_vecs[ID_moving], t_vecs[ID_up], t_vecs[ID_down])),(20,180), cv2.FONT_HERSHEY_SIMPLEX,
             #     0.5, (0, 255, 0), 2)
+
+        if ID_h_up in id_x and ID_h_down in id_x :
+
+            cv2.putText(frame, "Vertical Distance: "+ str(verticalHeight(id_y[ID_h_up], id_y[ID_h_down]) - 12+0.5),(20,40), cv2.FONT_HERSHEY_SIMPLEX,
+                0.5, (0, 255, 0), 2)
+
+
+        if ID_h_up in id_x and ID_static in id_x :
+
+            cv2.putText(frame, "Horizontal Distance: "+ str(HorizontalDist(id_x[ID_h_up], id_x[ID_static])),(20,
+            60), cv2.FONT_HERSHEY_SIMPLEX,
+                0.5, (0, 255, 0), 2)
 
     return frame
 
@@ -215,7 +231,7 @@ while cap.isOpened():
     cv2.imshow('Estimated Pose', output)
 
     key = cv2.waitKey(1) & 0xFF
-    if key == ord('q'):
+    if keyboard.is_pressed('q'):
         break
 
 cap.release()

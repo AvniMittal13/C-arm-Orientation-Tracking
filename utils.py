@@ -118,4 +118,8 @@ def getRotAngleFromPt(C, A, B):
     print(f"Cosine angle : {cosine_angle}, theta: {thetaC}")
     return thetaC
 
-    
+def verticalHeight(A, B):
+    return abs(A-B)
+
+def HorizontalDist(A, B):
+    return abs(A-B)
