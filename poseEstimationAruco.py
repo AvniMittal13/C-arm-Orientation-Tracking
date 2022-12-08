@@ -179,10 +179,13 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
         if ID_moving in id_x and ID_static in id_x and ID_up in id_x and ID_down in id_x:
 
             # getting rotation angle
+            c = getCircumcenter4(t_vecs[ID_up], t_vecs[ID_down], t_vecs[ID_moving])
+            
             circumCenterCoord = getCircumcenter2(t_vecs[ID_up], t_vecs[ID_down], t_vecs[ID_moving])
-            thetaC = getRotAngleFromPt(circumCenterCoord, t_vecs[ID_static], t_vecs[ID_moving])
+            # thetaC = getRotAngleFromPt(circumCenterCoord, t_vecs[ID_static], t_vecs[ID_moving])
+            thetaC = getRotAngleFromPt(c, t_vecs[ID_static], t_vecs[ID_moving])
 
-            cv2.putText(frame, "Rot angle: "+ str(-15+thetaC),(20,20), cv2.FONT_HERSHEY_SIMPLEX,
+            cv2.putText(frame, "Rot angle: "+ str(thetaC),(20,20), cv2.FONT_HERSHEY_SIMPLEX,
                 0.5, (0, 255, 0), 2)
             # cv2.putText(frame, "Rot angle u-d-static: "+ str(getRotAngleFromPt(t_vecs[ID_moving], t_vecs[ID_up], t_vecs[ID_down])),(20,180), cv2.FONT_HERSHEY_SIMPLEX,
             #     0.5, (0, 255, 0), 2)

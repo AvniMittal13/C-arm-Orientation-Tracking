@@ -2,7 +2,7 @@ import math
 import numpy as np
 
 # function to get circumcenter -> return tvec of the circumcenter 
-    # perpendicular bisectors of the 3 sides of a triangle meet at the point 
+# perpendicular bisectors of the 3 sides of a triangle meet at the point 
 def getCircumcenter(A, B, C):
     """
         Input : 
@@ -63,6 +63,60 @@ def getCircumcenter2(A, B, C):
     print(f"Radius: {R}, coord Circumcenter: {CC}")
     return CC
 
+def getCircumcenter3(A,B,C):
+    x1, y1, z1 = A[0][0]
+    x2, y2, z2 = B[0][0]
+    x3, y3, z3 = C[0][0]
+
+    # print(x1, y1, z1)
+
+    a = np.array([[(x1-x2),(y1-y2),(z1-z2)], [(x3-x2),(y3-y2),(z3-z2)], [(x1-x3),(y1-y3),(z1-z3)]])
+    b = 1/2 *np.array([x1*x1-x2*x2+y1*y1-y2*y2+z1*z1-z2*z2, x3*x3-x2*x2+y3*y3-y2*y2+z3*z3-z2*z2, x1*x1-x3*x3+y1*y1-y3*y3+z1*z1-z3*z3])
+    if np.linalg.det(a)==0:
+        return np.array([-1,-1,-1])
+    x = np.linalg.solve(a, b)
+    x = np.asarray(x)
+    x = np.expand_dims(x, axis = 0)
+    x = np.expand_dims(x, axis = 0)
+    print(np.asarray(x))
+    return np.asarray(x)
+
+def equation_plane(A, B, C):
+
+    x1, y1, z1 = A[0][0]
+    x2, y2, z2 = B[0][0]
+    x3, y3, z3 = C[0][0]
+
+    a1 = x2 - x1
+    b1 = y2 - y1
+    c1 = z2 - z1
+    a2 = x3 - x1
+    b2 = y3 - y1
+    c2 = z3 - z1
+    a = b1 * c2 - b2 * c1
+    b = a2 * c1 - a1 * c2
+    c = a1 * b2 - b1 * a2
+    d = (- a * x1 - b * y1 - c * z1)
+    return [a,b,c,d]
+
+def getCircumcenter4(A, B, C):
+    x1, y1, z1 = A[0][0]
+    x2, y2, z2 = B[0][0]
+    x3, y3, z3 = C[0][0]
+
+    plane =  equation_plane(A, B, C)
+    p = plane[0]
+    q = plane [1]
+    r = plane[2] 
+
+    a = np.array([[(x1-x2),(y1-y2),(z1-z2)], [(x3-x2),(y3-y2),(z3-z2)], [p,q,r]])
+    b = 1/2 *np.array([x1*x1-x2*x2+y1*y1-y2*y2+z1*z1-z2*z2, x3*x3-x2*x2+y3*y3-y2*y2+z3*z3-z2*z2, (x1+x2)*p + (y1+y2)*q + (z1+z2)*r])
+
+    cc = np.linalg.solve(a, b)
+    cc = np.expand_dims(cc, axis = 0)
+    cc = np.expand_dims(cc, axis = 0)
+
+    return cc
 
 def getRotAngleFromCenter(C, A, B):
     """
