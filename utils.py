@@ -142,7 +142,7 @@ def getRotAngleFromCenter(C, A, B):
 
     cosine_angle = np.dot(ac, bc) / (np.linalg.norm(ac) * np.linalg.norm(bc))
     thetaC = np.degrees(np.arccos(cosine_angle))
-    print(f"Cosine angle : {cosine_angle}, theta: {thetaC}")
+    # print(f"Cosine angle : {cosine_angle}, theta: {thetaC}")
     return thetaC
 
 def getRotAngleFromPt(C, A, B):
@@ -177,3 +177,9 @@ def verticalHeight(A, B):
 
 def HorizontalDist(A, B):
     return abs(A-B)
+
+def getDir(y_static, y_moving):
+    if y_moving > y_static:
+        return -1
+    else:
+        return 1

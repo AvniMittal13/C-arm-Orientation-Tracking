@@ -185,22 +185,29 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
             # thetaC = getRotAngleFromPt(circumCenterCoord, t_vecs[ID_static], t_vecs[ID_moving])
             thetaC = getRotAngleFromPt(c, t_vecs[ID_static], t_vecs[ID_moving])
 
-            cv2.putText(frame, "Rot angle: "+ str(thetaC),(20,20), cv2.FONT_HERSHEY_SIMPLEX,
+            dir = getDir(id_y[ID_static], id_y[ID_moving])
+
+            cv2.putText(frame, "Rot angle: "+ str(90 + dir * thetaC),(20,20), cv2.FONT_HERSHEY_SIMPLEX,
                 0.5, (0, 255, 0), 2)
             # cv2.putText(frame, "Rot angle u-d-static: "+ str(getRotAngleFromPt(t_vecs[ID_moving], t_vecs[ID_up], t_vecs[ID_down])),(20,180), cv2.FONT_HERSHEY_SIMPLEX,
             #     0.5, (0, 255, 0), 2)
+            print(f"Rot angle: { thetaC } degrees", )
 
         if ID_h_up in id_x and ID_h_down in id_x :
 
+            print(f"Vertical Distance: { verticalHeight(id_y[ID_h_up], id_y[ID_h_down]) - 12+0.5 } cm", )
             cv2.putText(frame, "Vertical Distance: "+ str(verticalHeight(id_y[ID_h_up], id_y[ID_h_down]) - 12+0.5),(20,40), cv2.FONT_HERSHEY_SIMPLEX,
                 0.5, (0, 255, 0), 2)
 
 
         if ID_h_up in id_x and ID_static in id_x :
-
+            
+            print(f"Horizontal distance: {HorizontalDist(id_x[ID_h_up], id_x[ID_static])} cm", )
             cv2.putText(frame, "Horizontal Distance: "+ str(HorizontalDist(id_x[ID_h_up], id_x[ID_static])),(20,
             60), cv2.FONT_HERSHEY_SIMPLEX,
                 0.5, (0, 255, 0), 2)
+
+        # print("///////////////////////////////")
 
     return frame
 
@@ -214,8 +221,20 @@ arucoDict = cv2.aruco.Dictionary_get(ARUCO_DICT[aruco_type])
 arucoParams = cv2.aruco.DetectorParameters_create()
 
 
-intrinsic_camera = np.array(((933.15867, 0, 657.59),(0,933.1586, 400.36993),(0,0,1)))
-distortion = np.array((-0.43948,0.18514,0,0))
+# intrinsic_camera = np.array(((933.15867, 0, 657.59),(0,933.1586, 400.36993),(0,0,1)))
+# distortion = np.array((-0.43948,0.18514,0,0))
+
+
+intrinsic_camera = np.array(((916.7279917   , 0.  ,       583.54549376),
+                             (0.      ,   917.08446165, 359.63170424),
+                             ( 0.     ,      0.  ,         1.        )))
+distortion = np.array(( 0.04814238 , 0.52114135, -0.0222943,  -0.02534582, -0.43832353))
+
+
+# intrinsic_camera = np.array(((963.784088   ,  0.  ,       644.9484349),
+#                              (0.      ,   973.58533458, 358.04710496),
+#                              ( 0.     ,      0.  ,         1.        )))
+# distortion = np.array((0.18889935,  0.00504424, -0.02151044,  0.0071916,   0.32126311))
 
 
 cap = cv2.VideoCapture(0)
