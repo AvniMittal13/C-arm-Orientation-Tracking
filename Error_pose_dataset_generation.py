@@ -4,6 +4,7 @@ import sys
 import time
 import keyboard
 from utils import * 
+import pandas as pd
 
 # setting up ids of aruco tags
 ID_center = 0   # won't really have an id for this, so need 4 ids in total
@@ -14,6 +15,9 @@ ID_down = 4
 
 ID_h_up = 5
 ID_h_down = 6
+
+actualAngle = 15
+position = 5
 
 ARUCO_DICT = {
 	"DICT_4X4_50": cv2.aruco.DICT_4X4_50,
@@ -95,7 +99,7 @@ def displayCoordinates(frame, markerCorner, tvec, rvec):
 
 
 
-def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coefficients):
+def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coefficients, dataset):
 
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     cv2.aruco_dict = cv2.aruco.Dictionary_get(aruco_dict_type)
@@ -107,6 +111,9 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
     markerSize = 7 # enter ground truth of marker size in cm
     AxesScalingFactor = 0.002
     # print(ids)
+
+    datasetCols = ['Original_Angle', 'position', 'angle', 'error']
+
 
     if ids is not None:
         id_list = ids.reshape((1, len(ids))).tolist()[0]
@@ -178,6 +185,9 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
 
         if ID_moving in id_x and ID_static in id_x and ID_up in id_x and ID_down in id_x:
 
+            d = dict.fromkeys(datasetCols)
+            
+
             # getting rotation angle
             c = getCircumcenter4(t_vecs[ID_up], t_vecs[ID_down], t_vecs[ID_moving])
             
@@ -191,7 +201,11 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
                 0.5, (0, 255, 0), 2)
             # cv2.putText(frame, "Rot angle u-d-static: "+ str(getRotAngleFromPt(t_vecs[ID_moving], t_vecs[ID_up], t_vecs[ID_down])),(20,180), cv2.FONT_HERSHEY_SIMPLEX,
             #     0.5, (0, 255, 0), 2)
-            print(f"Rot angle: { thetaC } degrees", )
+            print(f"Rot angle: { 90 + dir * thetaC } degrees", )
+
+            d['angle'] = 90 + dir * thetaC
+            dataset.loc[len(dataset)] = d
+
 
         if ID_h_up in id_x and ID_h_down in id_x :
 
@@ -202,7 +216,7 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
 
         if ID_h_up in id_x and ID_static in id_x :
             
-            print(f"Horizontal distance: {HorizontalDist(id_x[ID_h_up], id_x[ID_static])} cm", )
+            # print(f"Horizontal distance: {HorizontalDist(id_x[ID_h_up], id_x[ID_static])} cm", )
             cv2.putText(frame, "Horizontal Distance: "+ str(HorizontalDist(id_x[ID_h_up], id_x[ID_static])),(20,
             60), cv2.FONT_HERSHEY_SIMPLEX,
                 0.5, (0, 255, 0), 2)
@@ -236,6 +250,10 @@ distortion = np.array(( 0.04814238 , 0.52114135, -0.0222943,  -0.02534582, -0.43
 #                              ( 0.     ,      0.  ,         1.        )))
 # distortion = np.array((0.18889935,  0.00504424, -0.02151044,  0.0071916,   0.32126311))
 
+# creating csv file to store informaiton
+datasetCols = ['Original_Angle', 'position', 'angle', 'error']
+dataset = pd.DataFrame(columns = datasetCols)
+
 
 cap = cv2.VideoCapture(0)
 
@@ -243,17 +261,21 @@ cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
 
-
 while cap.isOpened():
     
     ret, img = cap.read()
     
-    output = pose_estimation(img, ARUCO_DICT[aruco_type], intrinsic_camera, distortion)
+    output = pose_estimation(img, ARUCO_DICT[aruco_type], intrinsic_camera, distortion, dataset)
 
     cv2.imshow('Estimated Pose', output)
 
     key = cv2.waitKey(1) & 0xFF
-    if keyboard.is_pressed('q'):
+    if len(dataset)>199 or keyboard.is_pressed('q'):
+
+        dataset["Original_Angle"] = actualAngle
+        dataset["position"] = position
+        dataset["error"] = dataset["Original_Angle"]-dataset["angle"]
+        dataset.to_csv("errorAnalysisDatasets/angle_"+str(actualAngle)+"_"+str(position)+".csv", index = False)
         break
 
 cap.release()
