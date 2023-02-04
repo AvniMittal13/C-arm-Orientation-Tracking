@@ -1,0 +1,7 @@
+# label:color_rgb:parts:actions
+background:0,0,0::
+carmUP:128,0,0::
+carmDOWN:0,128,0::
+carmLOCK:128,128,0::
+carmBACK:0,0,128::
+carmSCREEN:128,0,128::
