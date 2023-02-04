@@ -18,6 +18,7 @@ for pos in range(1,6):
 plt.xlabel("Original Angle")
 plt.ylabel("Error in Estimation")    
 plt.legend()
+plt.xticks(np.arange(15,135, 15))
 plt.show()
 
     

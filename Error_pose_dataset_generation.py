@@ -16,8 +16,8 @@ ID_down = 4
 ID_h_up = 5
 ID_h_down = 6
 
-actualAngle = 15
-position = 5
+actualAngle = 90
+position = 3
 
 ARUCO_DICT = {
 	"DICT_4X4_50": cv2.aruco.DICT_4X4_50,
